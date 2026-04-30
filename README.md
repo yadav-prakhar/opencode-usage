@@ -41,13 +41,13 @@ A native macOS Menu Bar application built with SwiftUI to easily monitor your Op
 
 To fetch your usage data, the app needs your Opencode API URL and Authentication Cookie. You can grab these easily using your browser's Developer Tools.
 
-1. Open your browser (Chrome, Safari, Firefox) and log into your **Opencode** account.
+1. Open your opencode console.
 2. Open the **Developer Tools** (Right-click anywhere on the page -> **Inspect**).
 3. Go to the **Network** tab.
 4. Refresh the page or interact with the Opencode UI until you see a network request made to `_server` (or `https://opencode.ai/_server?...`).
 5. Right-click on that `_server` request, select **Copy**, then choose **Copy as cURL (bash)**.
 
-   ![How to copy cURL](assets/curl-guide.png) <!-- Add your curl guide screenshot here in the 'assets' folder -->
+   ![How to copy cURL](assets/curl-guide.jpg)
 
 6. Open the **Opencode Go Usage Monitor** from your Mac menu bar.
 7. Click the **Settings (⚙️)** icon in the top right corner of the header.
