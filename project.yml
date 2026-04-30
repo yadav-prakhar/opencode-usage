@@ -11,6 +11,7 @@ targets:
     resources:
       - Resources/Assets.xcassets
     settings:
+      PRODUCT_NAME: "OpenCode Usage"
       PRODUCT_BUNDLE_IDENTIFIER: com.wiscaksono.opencode-usage
       GENERATE_INFOPLIST_FILE: YES
       INFOPLIST_KEY_LSUIElement: YES

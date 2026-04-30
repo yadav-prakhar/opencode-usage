@@ -33,7 +33,7 @@ struct ContentView: View {
 
     private var headerView: some View {
         HStack(spacing: 6) {
-            Text("Opencode Go")
+            Text("OpenCode Usage")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.primary)
 
