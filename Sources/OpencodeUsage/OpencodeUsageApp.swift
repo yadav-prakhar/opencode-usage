@@ -1,10 +1,26 @@
 import SwiftUI
 import os
+import AppKit
 
 @main
 struct OpencodeUsageApp: App {
     @StateObject private var viewModel = UsageViewModel()
     private let logger = Logger(subsystem: "com.wiscaksono.opencode-usage", category: "App")
+
+    /// Menu bar icon loaded from bundle Resources as a template image.
+    private static let menuBarIcon: NSImage = {
+        let img: NSImage
+        if let url = Bundle.main.url(forResource: "opencode-logo", withExtension: "png"),
+           let loaded = NSImage(contentsOf: url) {
+            img = loaded
+        } else {
+            // Fallback to SF Symbol if resource not found
+            img = NSImage(systemSymbolName: "cpu", accessibilityDescription: "OpencodeUsage") ?? NSImage()
+        }
+        img.isTemplate = true
+        img.size = NSSize(width: 16, height: 16)
+        return img
+    }()
 
     init() {
         logger.info("OpencodeUsage app started")
@@ -14,9 +30,7 @@ struct OpencodeUsageApp: App {
         MenuBarExtra {
             ContentView(viewModel: viewModel)
         } label: {
-            Text(viewModel.menuBarTitle)
-                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundColor(.primary)
+            Image(nsImage: Self.menuBarIcon)
         }
         .menuBarExtraStyle(.window)
     }

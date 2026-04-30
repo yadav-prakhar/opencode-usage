@@ -12,6 +12,7 @@ build: setup
 	xcodebuild -project $(PROJECT_NAME).xcodeproj -scheme $(SCHEME) -configuration Debug -derivedDataPath $(BUILD_DIR) build
 
 run: build
+	killall $(PROJECT_NAME) 2>/dev/null || true
 	open $(APP_BUNDLE)
 
 clean:

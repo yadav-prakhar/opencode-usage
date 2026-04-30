@@ -19,7 +19,7 @@ class UsageViewModel: ObservableObject {
 
     func startMonitoring() {
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 900, repeats: true) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
             Task { @MainActor in
                 self.refresh()
             }

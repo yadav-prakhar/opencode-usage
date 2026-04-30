@@ -1,0 +1,13 @@
+{
+  "images" : [
+    {
+      "filename" : "opencode-logo.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    }
+  ],
+  "info" : {
+    "author" : "xcodegen",
+    "version" : 1
+  }
+}
