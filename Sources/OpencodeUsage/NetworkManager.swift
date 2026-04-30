@@ -6,6 +6,7 @@ enum NetworkError: Error, LocalizedError {
     case parseError
     case requestFailed
     case notConfigured
+    case authExpired
 
     var errorDescription: String? {
         switch self {
@@ -13,6 +14,7 @@ enum NetworkError: Error, LocalizedError {
         case .parseError: return "Failed to parse server response"
         case .requestFailed: return "Request failed"
         case .notConfigured: return "Not configured. Please open Settings and paste your curl command."
+        case .authExpired: return "Authentication expired. Please update your credentials in Settings."
         }
     }
 }
@@ -28,6 +30,7 @@ final class NetworkManager: @unchecked Sendable {
 
         var request = URLRequest(url: apiURL)
         request.httpMethod = "GET"
+        request.timeoutInterval = 15
 
         for (key, value) in Config.headers {
             request.setValue(value, forHTTPHeaderField: key)
@@ -45,7 +48,11 @@ final class NetworkManager: @unchecked Sendable {
 
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
-            logger.error("API request failed with status: \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+            logger.error("API request failed with status: \(statusCode)")
+            if statusCode == 401 || statusCode == 403 {
+                throw NetworkError.authExpired
+            }
             throw NetworkError.requestFailed
         }
 
@@ -66,13 +73,20 @@ final class NetworkManager: @unchecked Sendable {
         return UsageStats(rolling: rolling, weekly: weekly, monthly: monthly)
     }
 
-    private static func makeRegex(for label: String) -> NSRegularExpression? {
-        let pattern = "\(label):\\s*\\$R\\[\\d+\\]\\s*=\\s*\\{\\s*status:\\s*\"([^\"]+)\",\\s*resetInSec:\\s*(\\d+),\\s*usagePercent:\\s*(\\d+)\\s*\\}"
-        return try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators])
-    }
+    private static let regexCache: [String: NSRegularExpression] = {
+        let labels = ["rollingUsage", "weeklyUsage", "monthlyUsage"]
+        var cache: [String: NSRegularExpression] = [:]
+        for label in labels {
+            let pattern = "\(label):\\s*\\$R\\[\\d+\\]\\s*=\\s*\\{\\s*status:\\s*\"([^\"]+)\",\\s*resetInSec:\\s*(\\d+),\\s*usagePercent:\\s*(\\d+)\\s*\\}"
+            if let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) {
+                cache[label] = regex
+            }
+        }
+        return cache
+    }()
 
     private func extractItem(from raw: String, label: String) throws -> UsageItem {
-        guard let regex = Self.makeRegex(for: label) else {
+        guard let regex = Self.regexCache[label] else {
             throw NetworkError.parseError
         }
 

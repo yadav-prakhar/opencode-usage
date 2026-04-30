@@ -9,7 +9,8 @@ enum Config {
 
     /// Whether the user has saved curl credentials.
     static var isConfigured: Bool {
-        UserDefaults.standard.string(forKey: Keys.apiURL) != nil
+        UserDefaults.standard.string(forKey: Keys.apiURL) != nil &&
+        UserDefaults.standard.string(forKey: Keys.cookie) != nil
     }
 
     static var apiURL: URL? {
