@@ -37,6 +37,8 @@ A native macOS Menu Bar application built with SwiftUI to easily monitor your Op
 
 ## Configuration: How to Get Your Credentials
 
+> **Note:** Currently, Opencode does not provide an official API or dedicated endpoint to fetch usage statistics. As a workaround, this app parses the payload directly from the web client's internal `_server` requests.
+
 To fetch your usage data, the app needs your Opencode API URL and Authentication Cookie. You can grab these easily using your browser's Developer Tools.
 
 1. Open your browser (Chrome, Safari, Firefox) and log into your **Opencode** account.
