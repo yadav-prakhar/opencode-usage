@@ -44,6 +44,16 @@ struct ContentView: View {
                     .controlSize(.small)
                     .scaleEffect(0.7)
                     .opacity(viewModel.isLoading ? 1 : 0)
+
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .focused($focusedField, equals: .settings)
             }
         }
         .padding(.horizontal, 12)
@@ -144,18 +154,6 @@ struct ContentView: View {
                 }
                 .buttonStyle(.plain)
                 .focused($focusedField, equals: .refresh)
-
-                Spacer()
-
-                Button {
-                    showSettings = true
-                } label: {
-                    Label("Settings", systemImage: "gear")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .focused($focusedField, equals: .settings)
             }
 
             Spacer()
