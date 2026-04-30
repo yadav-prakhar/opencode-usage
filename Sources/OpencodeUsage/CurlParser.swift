@@ -70,6 +70,16 @@ enum CurlParser {
                 continue
             }
 
+            // Handle -b 'cookie' or --cookie 'cookie'
+            if token == "-b" || token == "--cookie" {
+                guard i + 1 < tokens.count else {
+                    throw CurlParserError.parseFailed("Missing value for \(token)")
+                }
+                cookie = tokens[i + 1]
+                i += 2
+                continue
+            }
+
             // Handle -H 'header: value' or --header 'header: value'
             if token == "-H" || token == "--header" {
                 guard i + 1 < tokens.count else {
