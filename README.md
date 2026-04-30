@@ -2,7 +2,7 @@
 
 A native macOS Menu Bar application built with SwiftUI to easily monitor your Opencode Go subscription usage (Rolling, Weekly, and Monthly limits).
 
-![Screenshot Placeholder](screenshot.png) <!-- Add your screenshot here -->
+![App Screenshot](assets/screenshot.png) <!-- Add your app screenshot here in the 'assets' folder -->
 
 ## Features
 
@@ -44,6 +44,9 @@ To fetch your usage data, the app needs your Opencode API URL and Authentication
 3. Go to the **Network** tab.
 4. Refresh the page or interact with the Opencode UI until you see a network request made to `_server` (or `https://opencode.ai/_server?...`).
 5. Right-click on that `_server` request, select **Copy**, then choose **Copy as cURL (bash)**.
+
+   ![How to copy cURL](assets/curl-guide.png) <!-- Add your curl guide screenshot here in the 'assets' folder -->
+
 6. Open the **Opencode Go Usage Monitor** from your Mac menu bar.
 7. Click the **Settings (⚙️)** icon in the top right corner of the header.
 8. Paste the entire `curl` command into the text box and click **Save**.
