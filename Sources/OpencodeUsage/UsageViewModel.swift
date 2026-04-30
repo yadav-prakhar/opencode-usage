@@ -8,22 +8,43 @@ class UsageViewModel: ObservableObject {
     @Published var menuBarTitle: String = "--%"
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var needsSetup: Bool = false
 
     private var timer: Timer?
     private let networkManager = NetworkManager()
     private let logger = Logger(subsystem: "com.wiscaksono.opencode-usage", category: "Usage")
 
     init() {
-        startMonitoring()
+        if Config.isConfigured {
+            startMonitoring()
+        } else {
+            needsSetup = true
+            logger.info("No credentials found — showing setup screen")
+        }
     }
 
     func startMonitoring() {
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
             Task { @MainActor in
                 self.refresh()
             }
         }
+    }
+
+    func stopMonitoring() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    func credentialsUpdated() {
+        needsSetup = false
+        stats = nil
+        errorMessage = nil
+        menuBarTitle = "--%"
+        stopMonitoring()
+        startMonitoring()
     }
 
     func refresh() {

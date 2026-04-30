@@ -2,30 +2,27 @@ import AppKit
 import SwiftUI
 
 struct ContentView: View {
-    /// Header icon loaded from bundle Resources as a template image.
-    private static let headerIcon: NSImage = {
-        let img: NSImage
-        if let url = Bundle.main.url(forResource: "opencode-logo", withExtension: "png"),
-            let loaded = NSImage(contentsOf: url)
-        {
-            img = loaded
-        } else {
-            img =
-                NSImage(systemSymbolName: "cpu", accessibilityDescription: "OpencodeUsage")
-                ?? NSImage()
-        }
-        img.isTemplate = true
-        img.size = NSSize(width: 16, height: 16)
-        return img
-    }()
-    @StateObject var viewModel: UsageViewModel
+    @ObservedObject var viewModel: UsageViewModel
+    @State private var showSettings = false
     @FocusState private var focusedField: FocusableField?
+
+    private var isSettingsVisible: Bool {
+        viewModel.needsSetup || showSettings
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             headerView
             Divider()
-            contentView
+            if isSettingsVisible {
+                SettingsView(
+                    viewModel: viewModel,
+                    isPresented: $showSettings,
+                    isFirstSetup: viewModel.needsSetup
+                )
+            } else {
+                contentView
+            }
             Divider()
             footerView
         }
@@ -42,10 +39,12 @@ struct ContentView: View {
 
             Spacer()
 
-            ProgressView()
-                .controlSize(.small)
-                .scaleEffect(0.7)
-                .opacity(viewModel.isLoading ? 1 : 0)
+            if !isSettingsVisible {
+                ProgressView()
+                    .controlSize(.small)
+                    .scaleEffect(0.7)
+                    .opacity(viewModel.isLoading ? 1 : 0)
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
@@ -135,15 +134,29 @@ struct ContentView: View {
 
     private var footerView: some View {
         HStack(spacing: 8) {
-            Button {
-                viewModel.refresh()
-            } label: {
-                Label("Refresh", systemImage: "arrow.clockwise")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+            if !isSettingsVisible {
+                Button {
+                    viewModel.refresh()
+                } label: {
+                    Label("Refresh", systemImage: "arrow.clockwise")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .focused($focusedField, equals: .refresh)
+
+                Spacer()
+
+                Button {
+                    showSettings = true
+                } label: {
+                    Label("Settings", systemImage: "gear")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .focused($focusedField, equals: .settings)
             }
-            .buttonStyle(.plain)
-            .focused($focusedField, equals: .refresh)
 
             Spacer()
 
@@ -174,5 +187,5 @@ struct ContentView: View {
 }
 
 enum FocusableField: Hashable {
-    case refresh, quit
+    case refresh, settings, quit
 }

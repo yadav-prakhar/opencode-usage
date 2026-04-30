@@ -5,28 +5,40 @@ enum NetworkError: Error, LocalizedError {
     case invalidData
     case parseError
     case requestFailed
+    case notConfigured
 
     var errorDescription: String? {
         switch self {
         case .invalidData: return "Invalid data received"
         case .parseError: return "Failed to parse server response"
         case .requestFailed: return "Request failed"
+        case .notConfigured: return "Not configured. Please open Settings and paste your curl command."
         }
     }
 }
 
-@MainActor
-class NetworkManager {
+final class NetworkManager: @unchecked Sendable {
     private let logger = Logger(subsystem: "com.wiscaksono.opencode-usage", category: "Network")
 
     func fetchUsage() async throws -> UsageStats {
-        var request = URLRequest(url: Config.apiURL)
+        guard let apiURL = Config.apiURL else {
+            logger.error("API URL not configured")
+            throw NetworkError.notConfigured
+        }
+
+        var request = URLRequest(url: apiURL)
         request.httpMethod = "GET"
 
         for (key, value) in Config.headers {
             request.setValue(value, forHTTPHeaderField: key)
         }
-        request.setValue(Config.authCookie, forHTTPHeaderField: "Cookie")
+
+        if let cookie = Config.authCookie {
+            request.setValue(cookie, forHTTPHeaderField: "Cookie")
+        } else {
+            logger.error("Auth cookie not configured")
+            throw NetworkError.notConfigured
+        }
 
         logger.info("Fetching usage from API...")
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -54,10 +66,13 @@ class NetworkManager {
         return UsageStats(rolling: rolling, weekly: weekly, monthly: monthly)
     }
 
-    private func extractItem(from raw: String, label: String) throws -> UsageItem {
+    private static func makeRegex(for label: String) -> NSRegularExpression? {
         let pattern = "\(label):\\s*\\$R\\[\\d+\\]\\s*=\\s*\\{\\s*status:\\s*\"([^\"]+)\",\\s*resetInSec:\\s*(\\d+),\\s*usagePercent:\\s*(\\d+)\\s*\\}"
+        return try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators])
+    }
 
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else {
+    private func extractItem(from raw: String, label: String) throws -> UsageItem {
+        guard let regex = Self.makeRegex(for: label) else {
             throw NetworkError.parseError
         }
 
