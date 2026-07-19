@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var curlCommand: String = ""
     @State private var errorMessage: String?
     @State private var isSaving = false
+    @State private var progressAccent: Bool = Config.progressAccent
     @FocusState private var isTextEditorFocused: Bool
 
     var body: some View {
@@ -63,6 +64,22 @@ struct SettingsView: View {
                 .font(.system(size: 9))
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Divider().padding(.vertical, 2)
+
+            HStack {
+                Text("Accent-tinted progress bar")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Toggle("", isOn: $progressAccent)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
+                    .onChange(of: progressAccent) { _, newValue in
+                        Config.setProgressAccent(newValue)
+                    }
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)

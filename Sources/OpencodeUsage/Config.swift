@@ -5,6 +5,7 @@ enum Config {
         static let apiURL = "opencode_api_url"
         static let headers = "opencode_headers"
         static let cookie = "opencode_cookie"
+        static let progressAccent = "opencode_progress_accent"
     }
 
     /// Whether the user has saved curl credentials.
@@ -24,6 +25,14 @@ enum Config {
 
     static var authCookie: String? {
         UserDefaults.standard.string(forKey: Keys.cookie)
+    }
+
+    static var progressAccent: Bool {
+        UserDefaults.standard.bool(forKey: Keys.progressAccent)
+    }
+
+    static func setProgressAccent(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: Keys.progressAccent)
     }
 
     static func save(curlCommand: String) throws {

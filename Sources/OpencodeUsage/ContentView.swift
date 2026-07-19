@@ -173,6 +173,9 @@ struct ContentView: View {
     }
 
     private func colorForPercent(_ percent: Int) -> Color {
+        if Config.progressAccent {
+            return Color(NSColor.controlAccentColor)
+        }
         switch percent {
         case 0...50:
             return .green
