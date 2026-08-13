@@ -57,8 +57,8 @@ class UsageViewModel: ObservableObject {
             do {
                 let newStats = try await networkManager.fetchUsage()
                 self.stats = newStats
-                self.menuBarTitle = "\(newStats.rolling.usagePercent)%"
-                logger.info("Usage updated: rolling=\(newStats.rolling.usagePercent)%, weekly=\(newStats.weekly.usagePercent)%, monthly=\(newStats.monthly.usagePercent)%")
+                self.menuBarTitle = "\(newStats.rolling.percent)%"
+                logger.info("Usage updated: rolling=\(newStats.rolling.percent)%, weekly=\(newStats.weekly.percent)%, monthly=\(newStats.monthly.percent)%")
             } catch {
                 self.errorMessage = error.localizedDescription
                 logger.error("Failed to refresh usage: \(error.localizedDescription)")

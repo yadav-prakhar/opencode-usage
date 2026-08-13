@@ -89,22 +89,22 @@ struct ContentView: View {
                 Text(title)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
-                Text(" (Resets in \(formatDuration(seconds: item.resetInSec)))")
+                Text(" (Resets in \(formatDuration(seconds: secondsUntil(item.resetsAt))))")
                     .font(.system(size: 10))
                     .foregroundStyle(.tertiary)
                     .monospacedDigit()
 
                 Spacer()
 
-                Text("\(item.usagePercent)%")
+                Text("\(item.percent)%")
                     .font(.system(size: 12, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.primary)
                     .monospacedDigit()
             }
 
-            ProgressView(value: Double(item.usagePercent), total: 100)
+            ProgressView(value: Double(item.percent), total: 100)
                 .progressViewStyle(.linear)
-                .tint(colorForPercent(item.usagePercent))
+                .tint(colorForPercent(item.percent))
                 .controlSize(.small)
         }
         .padding(.horizontal, 12)

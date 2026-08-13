@@ -35,25 +35,18 @@ A native macOS Menu Bar application built with SwiftUI to easily monitor your Op
    ```
    *(Note: The app will appear in your macOS Menu Bar. It does not have a dock icon).*
 
-## Configuration: How to Get Your Credentials
+## Configuration: How to Get Your API Key
 
-> **Note:** Currently, Opencode does not provide an official API or dedicated endpoint to fetch usage statistics. As a workaround, this app parses the payload directly from the web client's internal `_server` requests.
-
-To fetch your usage data, the app needs your Opencode API URL and Authentication Cookie. You can grab these easily using your browser's Developer Tools.
+The app uses the official OpenCode API (`https://opencode.ai/zen/go/v1/usage`) to fetch your usage. You only need your OpenCode API key.
 
 1. Open your opencode console.
-2. Open the **Developer Tools** (Right-click anywhere on the page -> **Inspect**).
-3. Go to the **Network** tab.
-4. Refresh the page or interact with the Opencode UI until you see a network request made to `_server` (or `https://opencode.ai/_server?...`).
-5. Right-click on that `_server` request, select **Copy**, then choose **Copy as cURL (bash)**.
+2. Go to **Settings** → **API Keys**.
+3. Copy your API key (starts with `sk-...`).
+4. Open the **OpenCode Usage Monitor** from your Mac menu bar.
+5. Click the **Settings (⚙️)** icon in the top right corner of the header.
+6. Paste your API key into the text field and click **Save**.
 
-   ![How to copy cURL](assets/curl-guide.jpg)
-
-6. Open the **OpenCode Usage Monitor** from your Mac menu bar.
-7. Click the **Settings (⚙️)** icon in the top right corner of the header.
-8. Paste the entire `curl` command into the text box and click **Save**.
-
-The app will automatically extract your endpoint, headers, and authentication tokens to keep your usage updated!
+The app will automatically fetch your usage every 5 minutes.
 
 ## Development Commands
 

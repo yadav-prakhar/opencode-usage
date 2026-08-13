@@ -2,29 +2,17 @@ import Foundation
 
 enum Config {
     private enum Keys {
-        static let apiURL = "opencode_api_url"
-        static let headers = "opencode_headers"
-        static let cookie = "opencode_cookie"
+        static let apiKey = "opencode_api_key"
         static let progressAccent = "opencode_progress_accent"
     }
 
-    /// Whether the user has saved curl credentials.
+    /// Whether the user has saved an API key.
     static var isConfigured: Bool {
-        UserDefaults.standard.string(forKey: Keys.apiURL) != nil &&
-        UserDefaults.standard.string(forKey: Keys.cookie) != nil
+        UserDefaults.standard.string(forKey: Keys.apiKey) != nil
     }
 
-    static var apiURL: URL? {
-        guard let urlString = UserDefaults.standard.string(forKey: Keys.apiURL) else { return nil }
-        return URL(string: urlString)
-    }
-
-    static var headers: [String: String] {
-        UserDefaults.standard.dictionary(forKey: Keys.headers) as? [String: String] ?? [:]
-    }
-
-    static var authCookie: String? {
-        UserDefaults.standard.string(forKey: Keys.cookie)
+    static var apiKey: String? {
+        UserDefaults.standard.string(forKey: Keys.apiKey)
     }
 
     static var progressAccent: Bool {
@@ -35,16 +23,11 @@ enum Config {
         UserDefaults.standard.set(value, forKey: Keys.progressAccent)
     }
 
-    static func save(curlCommand: String) throws {
-        let result = try CurlParser.parse(curlCommand)
-        UserDefaults.standard.set(result.url.absoluteString, forKey: Keys.apiURL)
-        UserDefaults.standard.set(result.headers, forKey: Keys.headers)
-        UserDefaults.standard.set(result.cookie, forKey: Keys.cookie)
+    static func save(apiKey: String) {
+        UserDefaults.standard.set(apiKey, forKey: Keys.apiKey)
     }
 
     static func clear() {
-        UserDefaults.standard.removeObject(forKey: Keys.apiURL)
-        UserDefaults.standard.removeObject(forKey: Keys.headers)
-        UserDefaults.standard.removeObject(forKey: Keys.cookie)
+        UserDefaults.standard.removeObject(forKey: Keys.apiKey)
     }
 }

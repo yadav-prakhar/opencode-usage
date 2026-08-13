@@ -5,16 +5,14 @@ struct SettingsView: View {
     @Binding var isPresented: Bool
     let isFirstSetup: Bool
 
-    @State private var curlCommand: String = ""
+    @State private var apiKey: String = ""
     @State private var errorMessage: String?
     @State private var isSaving = false
     @State private var progressAccent: Bool = Config.progressAccent
-    @FocusState private var isTextEditorFocused: Bool
+    @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            headerView
-            Divider()
             formView
             if let error = errorMessage {
                 errorView(error)
@@ -24,46 +22,22 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Header
-
-    private var headerView: some View {
-        HStack {
-            Text(isFirstSetup ? "Setup Required" : "Settings")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.primary)
-            Spacer()
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-    }
-
     // MARK: - Form
 
     private var formView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Paste curl command from browser DevTools:")
+            Text("Paste your OpenCode API key:")
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            TextEditor(text: $curlCommand)
+            TextField("sk-...", text: $apiKey)
                 .font(.system(size: 11, design: .monospaced))
-                .frame(height: 80)
-                .focused($isTextEditorFocused)
-                .padding(4)
-                .background(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                        .background(Color.secondary.opacity(0.05))
-                )
-                .onChange(of: curlCommand) { _, _ in
+                .textFieldStyle(.roundedBorder)
+                .focused($isTextFieldFocused)
+                .onChange(of: apiKey) { _, _ in
                     errorMessage = nil
                 }
-
-            Text("Right-click request → Copy → Copy as cURL (bash)")
-                .font(.system(size: 9))
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
 
             Divider().padding(.vertical, 2)
 
@@ -84,7 +58,7 @@ struct SettingsView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .onAppear {
-            isTextEditorFocused = true
+            isTextFieldFocused = true
         }
     }
 
@@ -123,7 +97,7 @@ struct SettingsView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.small)
-            .disabled(curlCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
+            .disabled(apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
 
             if !isFirstSetup {
                 Button {
@@ -148,17 +122,16 @@ struct SettingsView: View {
         isSaving = true
         errorMessage = nil
 
-        do {
-            try Config.save(curlCommand: curlCommand)
+        let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !key.isEmpty else {
             isSaving = false
-            isPresented = false
-            viewModel.credentialsUpdated()
-        } catch let parseError as CurlParserError {
-            isSaving = false
-            errorMessage = parseError.localizedDescription
-        } catch {
-            isSaving = false
-            errorMessage = "Failed to save: \(error.localizedDescription)"
+            errorMessage = "API key is empty"
+            return
         }
+
+        Config.save(apiKey: key)
+        isSaving = false
+        isPresented = false
+        viewModel.credentialsUpdated()
     }
 }

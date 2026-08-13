@@ -1,5 +1,9 @@
 import Foundation
 
+func secondsUntil(_ date: Date) -> Int {
+    max(0, Int(date.timeIntervalSinceNow))
+}
+
 func formatDuration(seconds: Int) -> String {
     let days = seconds / 86400
     let hrs = (seconds % 86400) / 3600
