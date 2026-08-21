@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "skills": {
+    "sosumi": {
+      "source": "sosumi.ai",
+      "sourceUrl": "https://sosumi.ai",
+      "sourceType": "well-known",
+      "computedHash": "ed80519bc628e98a9b56d897ed27a205e3511981ffbdfc7d0fefd472aba8e224",
+      "wellKnownDigest": "sha256:4530e014b0499b09aa99f7aa6468065021d7ebbf429524ddfcb5348e596f9db5"
+    }
+  }
+}
