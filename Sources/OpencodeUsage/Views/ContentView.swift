@@ -173,16 +173,13 @@ struct ContentView: View {
     }
 
     private func colorForPercent(_ percent: Int) -> Color {
-        if Config.progressAccent {
+        if AppSettings.progressAccent {
             return Color(NSColor.controlAccentColor)
         }
-        switch percent {
-        case 0...50:
-            return .green
-        case 51...80:
-            return .yellow
-        default:
-            return .red
+        switch UsageLevel(percent: percent) {
+        case .safe: return .green
+        case .elevated: return .yellow
+        case .critical: return .red
         }
     }
 }

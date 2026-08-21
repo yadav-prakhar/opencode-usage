@@ -1,8 +1,10 @@
 # OpenCode Usage Monitor
 
+[![CI](https://github.com/wiscaksono/opencode-usage/actions/workflows/ci.yml/badge.svg)](https://github.com/wiscaksono/opencode-usage/actions/workflows/ci.yml)
+
 A native macOS Menu Bar application built with SwiftUI to easily monitor your Opencode Go subscription usage (Rolling, Weekly, and Monthly limits).
 
-![App Screenshot](assets/screenshot.png) <!-- Add your app screenshot here in the 'assets' folder -->
+![App Screenshot](assets/screenshot.png)
 
 ## Features
 
@@ -10,12 +12,11 @@ A native macOS Menu Bar application built with SwiftUI to easily monitor your Op
 - **Smart Progress Bars**: Progress bar colors dynamically change based on usage levels (Green for safe, Yellow for medium, Red for critical).
 - **Auto-Refresh**: Automatically fetches new data every 5 minutes, or you can manually refresh.
 - **Lightweight**: Runs as a background agent (`LSUIElement`) with no dock icon clutter.
-- **Terminal-Driven**: No Xcode GUI required. Generated and built entirely via `xcodegen` and `make`.
+- **Terminal-Driven**: No Xcode GUI required. Built with plain SwiftPM and a `Makefile`.
 
 ## Prerequisites
 
-- macOS with Command Line Tools / Xcode installed.
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (can be installed via Homebrew: `brew install xcodegen`).
+- macOS 26+ with Command Line Tools / Xcode installed.
 
 ## Installation & Setup
 
@@ -24,7 +25,7 @@ A native macOS Menu Bar application built with SwiftUI to easily monitor your Op
    cd opencode-usage
    ```
 
-2. **Generate the Xcode project and build**:
+2. **Build**:
    ```bash
    make build
    ```
@@ -52,10 +53,11 @@ The app will automatically fetch your usage every 5 minutes.
 
 A `Makefile` is provided for easy terminal workflows:
 
-- `make setup`: Generates the `.xcodeproj` using XcodeGen.
-- `make build`: Builds the application (Debug configuration).
-- `make run`: Kills any existing instance and runs the freshly built app.
-- `make clean`: Removes the generated `.xcodeproj` and the `build/` directory.
+- `make build`: Builds the application and assembles the app bundle (Debug configuration).
+- `make run`: Kills any existing instance, builds, and runs the app.
+- `make clean`: Removes the `.build/` and `build/` directories.
+- `make test`: Runs the unit test suite ([Swift Testing](https://developer.apple.com/xcode/swift-testing/)).
+- `make format`: Formats the codebase with [SwiftFormat](https://github.com/nicklockwood/SwiftFormat).
 - `make logs`: Streams the unified logs specifically for this app subsystem (`com.wiscaksono.opencode-usage`).
 
 ## License

@@ -1,0 +1,25 @@
+// swift-tools-version: 6.2
+import PackageDescription
+
+let package = Package(
+    name: "OpencodeUsage",
+    platforms: [
+        .macOS(.v26),
+    ],
+    targets: [
+        .executableTarget(
+            name: "OpencodeUsage",
+            path: "Sources/OpencodeUsage",
+            resources: [
+                .copy("Resources/opencode-logo.png"),
+            ]
+        ),
+        .testTarget(
+            name: "OpencodeUsageTests",
+            dependencies: [
+                "OpencodeUsage",
+            ],
+            path: "Tests/OpencodeUsageTests"
+        ),
+    ]
+)

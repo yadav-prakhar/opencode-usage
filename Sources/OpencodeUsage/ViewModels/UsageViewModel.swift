@@ -1,11 +1,10 @@
-import Foundation
 import Combine
+import Foundation
 import os
 
 @MainActor
 class UsageViewModel: ObservableObject {
     @Published var stats: UsageStats?
-    @Published var menuBarTitle: String = "--%"
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var needsSetup: Bool = false
@@ -15,7 +14,7 @@ class UsageViewModel: ObservableObject {
     private let logger = Logger(subsystem: "com.wiscaksono.opencode-usage", category: "Usage")
 
     init() {
-        if Config.isConfigured {
+        if AppSettings.hasAPIKey {
             startMonitoring()
         } else {
             needsSetup = true
@@ -26,7 +25,7 @@ class UsageViewModel: ObservableObject {
     func startMonitoring() {
         refresh()
         timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
+            guard let self else { return }
             Task { @MainActor in
                 self.refresh()
             }
@@ -42,7 +41,6 @@ class UsageViewModel: ObservableObject {
         needsSetup = false
         stats = nil
         errorMessage = nil
-        menuBarTitle = "--%"
         stopMonitoring()
         startMonitoring()
     }
@@ -57,7 +55,6 @@ class UsageViewModel: ObservableObject {
             do {
                 let newStats = try await networkManager.fetchUsage()
                 self.stats = newStats
-                self.menuBarTitle = "\(newStats.rolling.percent)%"
                 logger.info("Usage updated: rolling=\(newStats.rolling.percent)%, weekly=\(newStats.weekly.percent)%, monthly=\(newStats.monthly.percent)%")
             } catch {
                 self.errorMessage = error.localizedDescription

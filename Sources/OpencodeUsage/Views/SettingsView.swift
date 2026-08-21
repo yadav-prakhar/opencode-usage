@@ -8,7 +8,7 @@ struct SettingsView: View {
     @State private var apiKey: String = ""
     @State private var errorMessage: String?
     @State private var isSaving = false
-    @State private var progressAccent: Bool = Config.progressAccent
+    @State private var progressAccent: Bool = AppSettings.progressAccent
     @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
@@ -51,7 +51,7 @@ struct SettingsView: View {
                     .toggleStyle(.switch)
                     .controlSize(.small)
                     .onChange(of: progressAccent) { _, newValue in
-                        Config.setProgressAccent(newValue)
+                        AppSettings.setProgressAccent(newValue)
                     }
             }
         }
@@ -129,7 +129,13 @@ struct SettingsView: View {
             return
         }
 
-        Config.save(apiKey: key)
+        do {
+            try AppSettings.setAPIKey(key)
+        } catch {
+            isSaving = false
+            errorMessage = "Failed to save API key: \(error.localizedDescription)"
+            return
+        }
         isSaving = false
         isPresented = false
         viewModel.credentialsUpdated()

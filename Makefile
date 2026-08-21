@@ -1,30 +1,43 @@
 PROJECT_NAME := OpencodeUsage
 APP_NAME := OpenCode Usage
-SCHEME := OpencodeUsage
+BUNDLE_ID := com.wiscaksono.opencode-usage
+
 BUILD_DIR := build
-APP_BUNDLE := $(BUILD_DIR)/Build/Products/Debug/$(APP_NAME).app
-RELEASE_APP_BUNDLE := $(BUILD_DIR)/Build/Products/Release/$(APP_NAME).app
+DEBUG_APP_BUNDLE := $(BUILD_DIR)/Debug/$(APP_NAME).app
+RELEASE_APP_BUNDLE := $(BUILD_DIR)/Release/$(APP_NAME).app
 
-.PHONY: setup build release run clean logs dmg
+.PHONY: build release bundle run clean test format logs dmg
 
-setup:
-	xcodegen generate
+build:
+	swift build
+	@$(MAKE) bundle CONFIG=debug BUNDLE_PATH="$(DEBUG_APP_BUNDLE)"
 
-build: setup
-	xcodebuild -project $(PROJECT_NAME).xcodeproj -scheme $(SCHEME) -configuration Debug -derivedDataPath $(BUILD_DIR) build
+release:
+	swift build -c release
+	@$(MAKE) bundle CONFIG=release BUNDLE_PATH="$(RELEASE_APP_BUNDLE)"
 
-release: setup
-	xcodebuild -project $(PROJECT_NAME).xcodeproj -scheme $(SCHEME) -configuration Release -derivedDataPath $(BUILD_DIR) build
+bundle:
+	mkdir -p "$(BUNDLE_PATH)/Contents/MacOS" "$(BUNDLE_PATH)/Contents/Resources"
+	cp ".build/$(CONFIG)/$(PROJECT_NAME)" "$(BUNDLE_PATH)/Contents/MacOS/$(APP_NAME)"
+	cp Support/Info.plist "$(BUNDLE_PATH)/Contents/Info.plist"
+	cp Sources/OpencodeUsage/Resources/opencode-logo.png "$(BUNDLE_PATH)/Contents/Resources/opencode-logo.png"
+	codesign --force --sign - "$(BUNDLE_PATH)"
 
 run: build
 	killall "$(APP_NAME)" 2>/dev/null || true
-	open "$(APP_BUNDLE)"
+	open "$(DEBUG_APP_BUNDLE)"
 
 clean:
-	rm -rf $(PROJECT_NAME).xcodeproj $(BUILD_DIR) "$(APP_NAME).dmg"
+	rm -rf .build $(BUILD_DIR) "$(APP_NAME).dmg"
+
+test:
+	swift test
+
+format:
+	swiftformat .
 
 logs:
-	log stream --predicate 'subsystem == "com.wiscaksono.opencode-usage"' --level info
+	log stream --predicate 'subsystem == "$(BUNDLE_ID)"' --level info
 
 dmg: release
 	@rm -f "$(APP_NAME).dmg"

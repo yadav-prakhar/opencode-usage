@@ -1,11 +1,8 @@
+.build/
 build/
-*.xcodeproj/
-.xcworkspace/
+*.dmg
 .DS_Store
 DerivedData/
 *.swp
 *.swo
-*.xcuserstate
-project.xcworkspace/
-xcuserdata/
-*.dmg
+.swiftpm/
