@@ -60,6 +60,12 @@ A `Makefile` is provided for easy terminal workflows:
 - `make format`: Formats the codebase with [SwiftFormat](https://github.com/nicklockwood/SwiftFormat).
 - `make logs`: Streams the unified logs specifically for this app subsystem (`com.wiscaksono.opencode-usage`).
 
+## Releases
+
+Pre-built `.dmg` images are published automatically on every version tag — grab the latest one from [Releases](https://github.com/wiscaksono/opencode-usage/releases).
+
+> The app is ad-hoc signed, so macOS Gatekeeper may warn on first launch. Right-click the app → **Open** once to allow it.
+
 ## License
 
 MIT License
