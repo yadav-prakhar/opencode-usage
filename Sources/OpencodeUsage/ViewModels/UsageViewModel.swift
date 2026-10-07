@@ -10,10 +10,19 @@ class UsageViewModel: ObservableObject {
     @Published var needsSetup: Bool = false
 
     private var timer: Timer?
-    private let networkManager = NetworkManager()
+    private let fetch: @Sendable () async throws -> UsageStats
+    private let scheduleTimer: (@Sendable @escaping () -> Void) -> Timer
     private let logger = Logger(subsystem: "com.wiscaksono.opencode-usage", category: "Usage")
 
-    init() {
+    init(
+        fetch: (@Sendable () async throws -> UsageStats)? = nil,
+        scheduleTimer: ((@Sendable @escaping () -> Void) -> Timer)? = nil
+    ) {
+        let networkManager = NetworkManager()
+        self.fetch = fetch ?? { try await networkManager.fetchUsage(apiKey: AppSettings.apiKey) }
+        self.scheduleTimer = scheduleTimer ?? { handler in
+            Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in handler() }
+        }
         if AppSettings.hasAPIKey {
             startMonitoring()
         } else {
@@ -23,8 +32,9 @@ class UsageViewModel: ObservableObject {
     }
 
     func startMonitoring() {
+        stopMonitoring()
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
+        timer = scheduleTimer { [weak self] in
             guard let self else { return }
             Task { @MainActor in
                 self.refresh()
@@ -53,7 +63,7 @@ class UsageViewModel: ObservableObject {
 
         Task {
             do {
-                let newStats = try await networkManager.fetchUsage()
+                let newStats = try await self.fetch()
                 self.stats = newStats
                 logger.info("Usage updated: rolling=\(newStats.rolling.percent)%, weekly=\(newStats.weekly.percent)%, monthly=\(newStats.monthly.percent)%")
             } catch {
