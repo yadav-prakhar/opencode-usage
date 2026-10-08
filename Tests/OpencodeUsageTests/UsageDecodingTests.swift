@@ -102,4 +102,34 @@ struct UsageDecodingTests {
         let response = try NetworkManager.decoder.decode(UsageResponse.self, from: data)
         #expect(response.availableCredits?.amount == 2.0)
     }
+
+    @Test func decodesBalanceAsOfTimestamp() throws {
+        let data = """
+        {
+          "usage": {
+            "rolling": { "status": "allowed", "percent": 10, "resetsAt": "2026-08-22T12:00:00Z" },
+            "weekly": { "status": "allowed", "percent": 34, "resetsAt": "2026-08-22T12:00:00Z" },
+            "monthly": { "status": "allowed", "percent": 56, "resetsAt": "2026-08-22T12:00:00Z" }
+          },
+          "balance": { "usd": 4.10, "currency": "USD", "asOf": "2026-08-22T12:00:00Z" }
+        }
+        """.data(using: .utf8)!
+        let response = try NetworkManager.decoder.decode(UsageResponse.self, from: data)
+        #expect(response.availableCredits?.asOf == Date(timeIntervalSince1970: 1_787_400_000))
+    }
+
+    @Test func decodesStringBalance() throws {
+        let data = """
+        {
+          "usage": {
+            "rolling": { "status": "allowed", "percent": 10, "resetsAt": "2026-08-22T12:00:00Z" },
+            "weekly": { "status": "allowed", "percent": 34, "resetsAt": "2026-08-22T12:00:00Z" },
+            "monthly": { "status": "allowed", "percent": 56, "resetsAt": "2026-08-22T12:00:00Z" }
+          },
+          "balance": "9.99"
+        }
+        """.data(using: .utf8)!
+        let response = try NetworkManager.decoder.decode(UsageResponse.self, from: data)
+        #expect(response.availableCredits?.amount == 9.99)
+    }
 }

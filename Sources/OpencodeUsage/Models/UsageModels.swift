@@ -83,19 +83,28 @@ private let balanceAmountKeys = ["usd", "balance", "credits", "amount", "value",
 
 extension BalanceInfo {
     init(from decoder: Decoder) throws {
-        let asOf: Date? = nil
         var currency: String? = nil
         var amount: Double?
+        var asOf: Date? = nil
 
-        // Plain number: `"balance": 4.10`
-        if let single = try? decoder.singleValueContainer(), let direct = try? single.decode(Double.self) {
+        // Plain number: `"balance": 4.10` (or `"4.10"`)
+        if let single = try? decoder.singleValueContainer(),
+           let direct = try? single.decode(Double.self)
+        {
             amount = direct
-        } else if let single = try? decoder.singleValueContainer(), let intDirect = try? single.decode(Int.self) {
+        } else if let single = try? decoder.singleValueContainer(),
+                  let intDirect = try? single.decode(Int.self)
+        {
             amount = Double(intDirect)
+        } else if let single = try? decoder.singleValueContainer(),
+                  let stringDirect = try? single.decode(String.self),
+                  let parsed = Double(stringDirect)
+        {
+            amount = parsed
         } else {
             let container = try decoder.container(keyedBy: DynamicKey.self)
             for key in balanceAmountKeys {
-                let dynamic = DynamicKey(stringValue: key)!
+                let dynamic = DynamicKey(key)
                 if let value = try? container.decode(Double.self, forKey: dynamic) {
                     amount = value
                     break
@@ -111,7 +120,13 @@ extension BalanceInfo {
                     break
                 }
             }
-            currency = try? container.decode(String.self, forKey: DynamicKey(stringValue: "currency")!)
+            currency = try? container.decode(String.self, forKey: DynamicKey("currency"))
+            for key in ["asOf", "as_at"] {
+                if let date = try? container.decode(Date.self, forKey: DynamicKey(key)) {
+                    asOf = date
+                    break
+                }
+            }
         }
 
         guard let resolved = amount else {
@@ -124,9 +139,12 @@ extension BalanceInfo {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: DynamicKey.self)
-        try container.encode(amount, forKey: DynamicKey(stringValue: "usd")!)
+        try container.encode(amount, forKey: DynamicKey("usd"))
         if let currency {
-            try container.encode(currency, forKey: DynamicKey(stringValue: "currency")!)
+            try container.encode(currency, forKey: DynamicKey("currency"))
+        }
+        if let asOf {
+            try container.encode(asOf, forKey: DynamicKey("asOf"))
         }
     }
 }
@@ -136,6 +154,7 @@ extension UsageStats {
         case rolling
         case weekly
         case monthly
+        case balance
     }
 
     init(from decoder: Decoder) throws {
@@ -152,13 +171,15 @@ extension UsageStats {
         try container.encode(rolling, forKey: .rolling)
         try container.encode(weekly, forKey: .weekly)
         try container.encode(monthly, forKey: .monthly)
+        if let balance {
+            try container.encode(balance, forKey: .balance)
+        }
     }
 
     fileprivate static func decodeBalance(from decoder: Decoder) -> BalanceInfo? {
         guard let container = try? decoder.container(keyedBy: DynamicKey.self) else { return nil }
         for key in balanceAliases {
-            guard let dynamic = DynamicKey(stringValue: key) else { continue }
-            if let info = try? container.decode(BalanceInfo.self, forKey: dynamic) {
+            if let info = try? container.decode(BalanceInfo.self, forKey: DynamicKey(key)) {
                 return info
             }
         }
@@ -179,9 +200,9 @@ extension UsageResponse {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: DynamicKey.self)
-        try container.encode(usage, forKey: DynamicKey(stringValue: "usage")!)
+        try container.encode(usage, forKey: DynamicKey("usage"))
         if let balance {
-            try container.encode(balance, forKey: DynamicKey(stringValue: "balance")!)
+            try container.encode(balance, forKey: DynamicKey("balance"))
         }
     }
 }
@@ -190,9 +211,13 @@ private struct DynamicKey: CodingKey {
     var stringValue: String
     var intValue: Int?
 
-    init?(stringValue: String) {
+    init(_ stringValue: String) {
         self.stringValue = stringValue
         intValue = nil
+    }
+
+    init?(stringValue: String) {
+        self.init(stringValue)
     }
 
     init?(intValue: Int) {
