@@ -5,17 +5,18 @@ import os
 @MainActor
 class UsageViewModel: ObservableObject {
     @Published var stats: UsageStats?
+    @Published var balance: BalanceInfo?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var needsSetup: Bool = false
 
     private var timer: Timer?
-    private let fetch: @Sendable () async throws -> UsageStats
+    private let fetch: @Sendable () async throws -> UsageResponse
     private let scheduleTimer: (@Sendable @escaping () -> Void) -> Timer
     private let logger = Logger(subsystem: "com.wiscaksono.opencode-usage", category: "Usage")
 
     init(
-        fetch: (@Sendable () async throws -> UsageStats)? = nil,
+        fetch: (@Sendable () async throws -> UsageResponse)? = nil,
         scheduleTimer: ((@Sendable @escaping () -> Void) -> Timer)? = nil
     ) {
         let networkManager = NetworkManager()
@@ -50,6 +51,7 @@ class UsageViewModel: ObservableObject {
     func credentialsUpdated() {
         needsSetup = false
         stats = nil
+        balance = nil
         errorMessage = nil
         stopMonitoring()
         startMonitoring()
@@ -63,9 +65,10 @@ class UsageViewModel: ObservableObject {
 
         Task {
             do {
-                let newStats = try await self.fetch()
-                self.stats = newStats
-                logger.info("Usage updated: rolling=\(newStats.rolling.percent)%, weekly=\(newStats.weekly.percent)%, monthly=\(newStats.monthly.percent)%")
+                let response = try await self.fetch()
+                self.stats = response.usage
+                self.balance = response.availableCredits
+                logger.info("Usage updated: rolling=\(response.usage.rolling.percent)%, weekly=\(response.usage.weekly.percent)%, monthly=\(response.usage.monthly.percent)%")
             } catch {
                 self.errorMessage = error.localizedDescription
                 logger.error("Failed to refresh usage: \(error.localizedDescription)")
