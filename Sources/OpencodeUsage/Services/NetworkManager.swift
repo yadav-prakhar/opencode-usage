@@ -30,7 +30,7 @@ final class NetworkManager: @unchecked Sendable {
         self.endpoint = endpoint
     }
 
-    func fetchUsage(apiKey: String?) async throws -> UsageStats {
+    func fetchUsage(apiKey: String?) async throws -> UsageResponse {
         guard let apiKey, !apiKey.isEmpty else {
             logger.error("API key not configured")
             throw NetworkError.notConfigured
@@ -59,7 +59,7 @@ final class NetworkManager: @unchecked Sendable {
         do {
             let decoded = try Self.decoder.decode(UsageResponse.self, from: data)
             logger.info("Parsed usage stats successfully")
-            return decoded.usage
+            return decoded
         } catch {
             logger.error("Failed to decode response: \(error.localizedDescription)")
             throw NetworkError.parseError

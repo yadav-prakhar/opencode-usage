@@ -3,9 +3,10 @@ import Foundation
 import Testing
 
 struct FetchSeamTests {
-    private static func sampleStats() -> UsageStats {
+    private static func sampleResponse() -> UsageResponse {
         let item = UsageItem(status: "allowed", percent: 10, resetsAt: Date(timeIntervalSince1970: 1_787_400_000))
-        return UsageStats(rolling: item, weekly: item, monthly: item)
+        let usage = UsageStats(rolling: item, weekly: item, monthly: item)
+        return UsageResponse(usage: usage, balance: nil)
     }
 
     @Test func fetchUsageRequiresAPIKey() async {
@@ -19,7 +20,7 @@ struct FetchSeamTests {
     }
 
     @Test @MainActor func viewModelUsesInjectedFetch() async throws {
-        let expected = Self.sampleStats()
+        let expected = Self.sampleResponse()
         let viewModel = UsageViewModel(
             fetch: { expected },
             scheduleTimer: { _ in Timer(timeInterval: 300, repeats: true, block: { _ in }) }
@@ -34,7 +35,8 @@ struct FetchSeamTests {
             try await Task.sleep(nanoseconds: 20_000_000)
         }
 
-        #expect(viewModel.stats == expected)
+        #expect(viewModel.stats == expected.usage)
+        #expect(viewModel.balance == expected.availableCredits)
         #expect(viewModel.isLoading == false)
         #expect(viewModel.errorMessage == nil)
         viewModel.stopMonitoring()
